@@ -36,12 +36,15 @@
         return value;
     }
 
-    const downloadFile = (action:any, type:string) => {
-        const blob = new Blob([JSON.stringify(action.data._rawCodeOrAbi, null, 4)], {type: 'application/json'});
+    const downloadFile = (action:any, suffix:string) => {
+        const type = suffix === 'wasm' ? 'application/wasm' : 'application/json';
+        const blob = suffix === 'wasm'
+            ? new Blob([action.data._rawCodeOrAbi], {type})
+            : new Blob([JSON.stringify(action.data._rawCodeOrAbi)], {type});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${action.data.account}.${type}`;
+        a.download = `${action.data.account}.${suffix}`;
         a.click();
     }
 </script>
@@ -54,9 +57,7 @@
     <section class="text-center mt-5 py-7 text-white max-w-2xl mx-auto">
         <h1 class="text-3xl">EOS Tokenomics MSIG Viewer</h1>
         <p class="text-xs mt-1 max-w-md mx-auto">
-            There is a problem with all MSIG viewers where they will not decode actions of a newly deployed contract within
-            the same transaction. This tool will allow you to view the EOS tokenomics proposals that include changes
-            to the system contracts and usage of those new contracts within the same transaction.
+            Unlike other MSIG viewers, this viewer will properly decode actions of newly deployed contracts within the same transaction cumulatively.
         </p>
     </section>
 

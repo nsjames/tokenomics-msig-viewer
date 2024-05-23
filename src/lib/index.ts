@@ -76,8 +76,7 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
                     const decodedAbi = Serializer.decode({data: decoded.abi, type: ABI})
                     const jsonabi = ABI.from(decodedAbi);
                     decoded._rawCodeOrAbi = jsonabi;
-                    const raw = Serializer.encode({object: jsonabi, type: ABI});
-                    decoded.abi = Checksum256.hash(Bytes.fromString(`"${raw.hexString.toUpperCase()}"`, 'utf8').array);
+                    decoded.abi = Checksum256.hash(Bytes.fromString(JSON.stringify(jsonabi),'utf8').array);
                 }
             }
 
