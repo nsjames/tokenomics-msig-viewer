@@ -1,1 +1,5 @@
-<slot></slot><script>import "../app.css";</script><style></style>
+<script lang="ts">
+    import "$lib/app.css";
+</script>
+
+<slot />

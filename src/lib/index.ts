@@ -1,5 +1,5 @@
 // place files you want to import through the `$lib` alias in this folder.
-import {ABI, APIClient, Name, PackedTransaction, Checksum256} from "@wharfkit/antelope";
+import {ABI, APIClient, Name, PackedTransaction, Checksum256, Serializer, Bytes, Blob} from "@wharfkit/antelope";
 
 export const getActions = async (fetch:any, account:string, proposal: string, network:string) => {
     const grabAbi = (filename:string) => {
@@ -29,19 +29,27 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
             packed_trx: response.rows[0].packed_transaction
         }).getTransaction();
 
+        let newlySetAbis:{[key:string]:any} = {};
 
         let actions:any[] = [];
         for(let action of unpacked.actions) {
-
-            const abi = await (async () => {
-                switch(action.account.toString()){
-                    case 'eosio.token': return grabAbi('eosio.token.abi');
-                    case 'eosio': return grabAbi('eosio.system.abi');
-                    case 'eosio.fees': return grabAbi('eosio.fees.abi');
-                    default: return client.v1.chain.get_abi(action.account).then((response) => {
-                        return response.abi;
-                    });
+            if(action.account.toString() === 'eosio'){
+                if(action.name.toString() === 'setabi'){
+                    const currentSystemAbi = await grabAbi('eosio.system.abi');
+                    const decoded:any = action.decodeData(ABI.from(currentSystemAbi));
+                    newlySetAbis[decoded.account.toString()] = Serializer.decode({data: decoded.abi, type: ABI});
                 }
+            }
+
+            const abi = await (async() => {
+                if(newlySetAbis[action.account.toString()]){
+                    return newlySetAbis[action.account.toString()];
+                }
+
+                return client.v1.chain.get_abi(action.account).then(x => x.abi).catch(err => {
+                    console.error(err);
+                    return null;
+                });
             })();
 
             if(!abi){
@@ -60,11 +68,16 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
 
             if(action.account.toString() === 'eosio'){
                 if(action.name.toString() === 'setcode'){
+                    decoded._rawCodeOrAbi = decoded.code.utf8String;
                     decoded.code = Checksum256.hash(decoded.code.array);
                 }
 
                 if(action.name.toString() === 'setabi'){
-                    decoded.abi = Checksum256.hash(decoded.abi.array);
+                    const decodedAbi = Serializer.decode({data: decoded.abi, type: ABI})
+                    const jsonabi = ABI.from(decodedAbi);
+                    decoded._rawCodeOrAbi = jsonabi;
+                    const raw = Serializer.encode({object: jsonabi, type: ABI});
+                    decoded.abi = Checksum256.hash(Bytes.fromString(`"${raw.hexString.toUpperCase()}"`, 'utf8').array);
                 }
             }
 
@@ -72,7 +85,7 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
                 account: action.account,
                 name: action.name,
                 authorization: action.authorization,
-                data: decoded
+                data: decoded,
             })
         }
 
