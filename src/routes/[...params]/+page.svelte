@@ -223,7 +223,7 @@
                         {/if}
 
                         <button class="btn" on:click={() => WharfService.exec(proposer, proposal)}>
-                            Exec
+                            Execute
                         </button>
 
                         {#if !$account}
