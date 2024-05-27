@@ -1,5 +1,6 @@
 <script lang="ts">
     import "$lib/app.css";
+    import { Toaster } from 'svelte-sonner'
 </script>
 
 <svelte:head>
@@ -15,5 +16,7 @@
     <meta property="og:url" content="https://msigviewer.netlify.app" />
     <meta property="og:site_name" content="EOS MSIG Viewer" />
 </svelte:head>
+
+<Toaster />
 
 <slot />

@@ -3,23 +3,26 @@
     import {NETWORKS} from "$lib/networks";
     import {onMount} from "svelte";
     import {Bytes, Checksum256} from "@wharfkit/antelope";
+    import WharfService, {account} from "$lib/wharf";
 
     export let data;
 
     let actions:any = null;
 
+    let proposalData:any = null;
 
-    let account:string = data.account || "";
+
+    let proposer:string = data.account || "";
     let proposal:string = data.proposal || "";
     let network:string = data.network || NETWORKS.mainnet;
     let loading:boolean = false;
 
     const updateUrl = () => {
-        if(!account || !proposal){
+        if(!proposer || !proposal){
             window.history.pushState({}, '', '/');
         } else {
             const networkKey = Object.keys(NETWORKS).find(key => NETWORKS[key] === network);
-            const url = `/${networkKey}/${account}/${proposal}`;
+            const url = `/${networkKey}/${proposer}/${proposal}`;
             window.history.pushState({}, '', url);
         }
     }
@@ -27,19 +30,14 @@
     const findProposal = async () => {
         loading = true;
         updateUrl();
-        const res = await getActions(fetch, account, proposal, network).catch(err => {
+        const res = await getActions(fetch, proposer, proposal, network).catch(err => {
             alert(err);
             return null;
         })
 
         loading = false;
 
-        if(!res) {
-            return data.actions = null;
-        }
-
-        if(!res) return;
-        actions = res;
+        proposalData = res;
     }
 
     const readableValue = (value:any) => {
@@ -62,10 +60,32 @@
     }
 
     onMount(() => {
-        if(account && proposal) {
+        if(proposer && proposal) {
             findProposal();
         }
+
+        WharfService.init();
     })
+
+    $: isProposer = $account && proposalData?.proposer === $account;
+    $: isApprover = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account);
+    $: hasApproved = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account && x.approved);
+
+    const approve = async () => {
+
+    }
+
+    const unapprove = async () => {
+
+    }
+
+    const cancel = async () => {
+
+    }
+
+    const exec = async () => {
+
+    }
 </script>
 
 
@@ -86,7 +106,7 @@
         </section>
 
         <section class="flex gap-2 border border-zinc-600 rounded-lg p-1 mx-auto flex-col w-full lg:flex-row lg:w-fit">
-            <input type="text" bind:value={account} placeholder="account" class="border border-zinc-200 rounded p-2" on:keydown={(e) => e.key === 'Enter' && findProposal()} />
+            <input type="text" bind:value={proposer} placeholder="account" class="border border-zinc-200 rounded p-2" on:keydown={(e) => e.key === 'Enter' && findProposal()} />
             <input type="text" bind:value={proposal} placeholder="proposal" class="border border-zinc-200 rounded p-2" on:keydown={(e) => e.key === 'Enter' && findProposal()} />
             <select bind:value={network} class="border border-zinc-200 rounded p-2 capitalize">
                 {#each Object.keys(NETWORKS) as network}
@@ -101,7 +121,7 @@
                     </svg>
                 </button>
             {:else}
-                <button class="bg-zinc-500 hover:bg-zinc-400 text-white p-2 px-4 font-bold rounded" on:click={findProposal}>Load MSIG</button>
+                <button class="btn" on:click={findProposal}>Load MSIG</button>
             {/if}
         </section>
 
@@ -109,8 +129,40 @@
             {#if loading}
                 <div class="skeleton w-full h-[100px] mb-4 rounded"></div>
             {:else}
-                {#if actions}
-                    {#each actions as action,index}
+                {#if proposalData}
+
+                    <figure class="text-sm font-bold text-white">
+                        Expiration
+                    </figure>
+                    <figure class="text-white font-bold text-xl -mt-2">
+                        {new Date(proposalData.expiration).toLocaleString()}
+                    </figure>
+
+                    {#if proposalData.earliestExecution}
+                        <figure class="text-sm font-bold text-white">
+                            Earliest Execution
+                        </figure>
+                        <figure class="text-white font-bold text-xl -mt-2">
+                            {new Date(proposalData.earliestExecution).toLocaleString()}
+                        </figure>
+                    {/if}
+
+                    <figure class="text-sm font-bold text-white mt-5">
+                        Approvals ({proposalData.approvals.filter(x => x.approved).length}/{proposalData.approvals.length})
+                    </figure>
+                    <section class="flex flex-wrap gap-0.5">
+                        {#each proposalData.approvals as requested}
+                            <figure class="rounded bg-blue-500 text-white font-bold px-3 py-2 text-xs {requested.approved ? '' : 'opacity-50'} hover:opacity-100">
+                                {requested.name}
+                            </figure>
+                        {/each}
+                    </section>
+
+
+                    <figure class="text-sm font-bold text-white mt-5">
+                        Actions
+                    </figure>
+                    {#each proposalData.actions as action,index}
                         <section class="text-black rounded-lg p-4 {action.wrapper ? 'bg-blue-200' : 'bg-white'}">
                             <section class="flex items-center gap-2">
                                 <figure class="p-1 px-2 bg-zinc-600 text-white rounded text-xs mt-1">
@@ -146,6 +198,47 @@
                             {/if}
                         </section>
                     {/each}
+
+                    <figure class="text-sm font-bold text-white mt-10">
+                        What would you like to do?
+                    </figure>
+
+                    <section class="fles flex-wrap">
+                        {#if isApprover}
+                            {#if hasApproved}
+                                <button class="btn" on:click={() => WharfService.unapprove(proposer, proposal)}>
+                                    Unapprove
+                                </button>
+                            {:else}
+                                <button class="btn" on:click={() => WharfService.approve(proposer, proposal)}>
+                                    Approve
+                                </button>
+                            {/if}
+                        {/if}
+
+                        {#if isProposer}
+                            <button class="btn" on:click={() => WharfService.cancel(proposer, proposal)}>
+                                Cancel
+                            </button>
+                        {/if}
+
+                        <button class="btn" on:click={() => WharfService.exec(proposer, proposal)}>
+                            Exec
+                        </button>
+
+                        {#if !$account}
+                            <button class="btn-primary" on:click={WharfService.login}>
+                                Login
+                            </button>
+                        {:else}
+                            <button class="btn" on:click={WharfService.logout}>
+                                Logout ({$account})
+                            </button>
+                        {/if}
+                    </section>
+
+                    <div style="height: 100px"></div>
+
                 {:else}
                     <section class="bg-white rounded-lg text-black text-center p-4 py-8">
                         <figure>No proposal found</figure>
@@ -158,6 +251,12 @@
 </section>
 
 <style>
+    .btn {
+        @apply border border-zinc-500 text-white hover:bg-white hover:text-black p-2 px-4 font-bold rounded;
+    }
+    .btn-primary {
+        @apply bg-blue-500 text-white hover:bg-white hover:text-black p-2 px-4 font-bold rounded;
+    }
     @keyframes shine {
         0% {
             background-position: -200px 0;
