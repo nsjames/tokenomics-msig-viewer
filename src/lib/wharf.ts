@@ -20,6 +20,7 @@ export default class WharfService {
             chains: [
                 Chains.EOS,
                 Chains.Jungle4,
+                Chains.KylinTestnet,
             ],
             ui: new WebRenderer(),
             walletPlugins: [
