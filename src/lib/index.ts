@@ -67,7 +67,6 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
                 const decoded:any = action.decodeData(ABI.from(abi));
 
                 if(action.account.toString() === 'eosio.msig' && action.name.toString() === 'propose'){
-                    console.log(decoded.trx.actions);
                     const trx = Transaction.from(decoded.trx);
                     actions.push({
                         account: 'wrapped actions start',
