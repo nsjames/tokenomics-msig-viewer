@@ -86,8 +86,8 @@
         </section>
 
         <section class="flex gap-2 border border-zinc-600 rounded-lg p-1 mx-auto flex-col w-full lg:flex-row lg:w-fit">
-            <input type="text" bind:value={account} placeholder="account" class="border border-zinc-200 rounded p-2">
-            <input type="text" bind:value={proposal} placeholder="proposal" class="border border-zinc-200 rounded p-2">
+            <input type="text" bind:value={account} placeholder="account" class="border border-zinc-200 rounded p-2" on:keydown={(e) => e.key === 'Enter' && findProposal()} />
+            <input type="text" bind:value={proposal} placeholder="proposal" class="border border-zinc-200 rounded p-2" on:keydown={(e) => e.key === 'Enter' && findProposal()} />
             <select bind:value={network} class="border border-zinc-200 rounded p-2 capitalize">
                 {#each Object.keys(NETWORKS) as network}
                     <option class="capitalize" value={NETWORKS[network]}>{network}</option>
@@ -111,7 +111,7 @@
             {:else}
                 {#if actions}
                     {#each actions as action,index}
-                        <section class="bg-white text-black rounded-lg p-4">
+                        <section class="bg-white text-black rounded-lg p-4 {action.wrapper ? 'bg-blue-200' : ''}">
                             <section class="flex items-center gap-2">
                                 <figure class="p-1 px-2 bg-zinc-600 text-white rounded text-xs mt-1">
                                     #{index+1}
