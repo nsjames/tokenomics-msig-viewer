@@ -111,7 +111,7 @@
             {:else}
                 {#if actions}
                     {#each actions as action,index}
-                        <section class="bg-white text-black rounded-lg p-4 {action.wrapper ? 'bg-blue-200' : ''}">
+                        <section class="text-black rounded-lg p-4 {action.wrapper ? 'bg-blue-200' : 'bg-white'}">
                             <section class="flex items-center gap-2">
                                 <figure class="p-1 px-2 bg-zinc-600 text-white rounded text-xs mt-1">
                                     #{index+1}
