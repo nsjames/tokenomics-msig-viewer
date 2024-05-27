@@ -204,27 +204,29 @@
                     </figure>
 
                     <section class="fles flex-wrap">
-                        {#if isApprover}
-                            {#if hasApproved}
-                                <button class="btn" on:click={() => WharfService.unapprove(proposer, proposal)}>
-                                    Unapprove
-                                </button>
-                            {:else}
-                                <button class="btn" on:click={() => WharfService.approve(proposer, proposal)}>
-                                    Approve
+                        {#if $account}
+                            {#if isApprover}
+                                {#if hasApproved}
+                                    <button class="btn" on:click={() => WharfService.unapprove(proposer, proposal)}>
+                                        Unapprove
+                                    </button>
+                                {:else}
+                                    <button class="btn" on:click={() => WharfService.approve(proposer, proposal)}>
+                                        Approve
+                                    </button>
+                                {/if}
+                            {/if}
+
+                            {#if isProposer}
+                                <button class="btn" on:click={() => WharfService.cancel(proposer, proposal)}>
+                                    Cancel
                                 </button>
                             {/if}
-                        {/if}
 
-                        {#if isProposer}
-                            <button class="btn" on:click={() => WharfService.cancel(proposer, proposal)}>
-                                Cancel
+                            <button class="btn" on:click={() => WharfService.exec(proposer, proposal)}>
+                                Execute
                             </button>
                         {/if}
-
-                        <button class="btn" on:click={() => WharfService.exec(proposer, proposal)}>
-                            Execute
-                        </button>
 
                         {#if !$account}
                             <button class="btn-primary" on:click={WharfService.login}>
