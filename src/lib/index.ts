@@ -1,4 +1,3 @@
-// place files you want to import through the `$lib` alias in this folder.
 import {ABI, APIClient, Name, PackedTransaction, Checksum256, Serializer, Bytes, Blob} from "@wharfkit/antelope";
 
 export const getActions = async (fetch:any, account:string, proposal: string, network:string) => {
@@ -9,7 +8,6 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
     }
 
     const client = new APIClient({
-        // url: "https://eos.greymass.com",
         url: network,
         fetch
     });
@@ -68,7 +66,7 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
 
             if(action.account.toString() === 'eosio'){
                 if(action.name.toString() === 'setcode'){
-                    decoded._rawCodeOrAbi = decoded.code.utf8String;
+                    decoded._rawCodeOrAbi = decoded.code;
                     decoded.code = Checksum256.hash(decoded.code.array);
                 }
 
