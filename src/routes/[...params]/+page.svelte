@@ -39,6 +39,7 @@
         loading = false;
 
         proposalData = res;
+        console.log('proposalData', proposalData);
     }
 
     const readableValue = (value:any) => {
@@ -68,7 +69,7 @@
         WharfService.init();
     })
 
-    $: isProposer = $account && proposalData?.proposer === $account;
+    $: isProposer = $account && proposer === $account;
     $: isApprover = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account);
     $: hasApproved = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account && x.approved);
 
