@@ -149,7 +149,7 @@
                     <figure class="text-sm font-bold text-white">
                         Hash
                     </figure>
-                    <figure class="text-white font-bold text-xl -mt-2">
+                    <figure class="text-white font-bold text-xl -mt-2 break-all">
                         {proposalData.hash}
                     </figure>
 
