@@ -10,6 +10,7 @@
     let actions:any = null;
 
     let proposalData:any = null;
+    let approveHash:string = "";
 
 
     let proposer:string = data.account || "";
@@ -71,20 +72,33 @@
     $: isApprover = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account);
     $: hasApproved = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account && x.approved);
 
-    const approve = async () => {
+    const refresh = async () => {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await findProposal();
+    }
 
+    const approve = async () => {
+        if(await WharfService.approve(proposer, proposal, approveHash.trim().length ? approveHash : undefined)){
+            await refresh();
+        }
     }
 
     const unapprove = async () => {
-
+        if(await WharfService.unapprove(proposer, proposal)){
+            await refresh();
+        }
     }
 
     const cancel = async () => {
-
+        if(await WharfService.cancel(proposer, proposal)){
+            await refresh();
+        }
     }
 
     const exec = async () => {
-
+        if(await WharfService.exec(proposer, proposal)){
+            await refresh();
+        }
     }
 </script>
 
@@ -130,6 +144,13 @@
                 <div class="skeleton w-full h-[100px] mb-4 rounded"></div>
             {:else}
                 {#if proposalData}
+
+                    <figure class="text-sm font-bold text-white">
+                        Hash
+                    </figure>
+                    <figure class="text-white font-bold text-xl -mt-2">
+                        {proposalData.hash}
+                    </figure>
 
                     <figure class="text-sm font-bold text-white">
                         Expiration
@@ -207,23 +228,24 @@
                         {#if $account}
                             {#if isApprover}
                                 {#if hasApproved}
-                                    <button class="btn" on:click={() => WharfService.unapprove(proposer, proposal)}>
+                                    <button class="btn" on:click={unapprove}>
                                         Unapprove
                                     </button>
                                 {:else}
-                                    <button class="btn" on:click={() => WharfService.approve(proposer, proposal)}>
+                                    <input bind:value={approveHash} type="text" placeholder="Hash (optional)" class="border border-zinc-200 rounded p-2" />
+                                    <button class="btn" on:click={approve}>
                                         Approve
                                     </button>
                                 {/if}
                             {/if}
 
                             {#if isProposer}
-                                <button class="btn" on:click={() => WharfService.cancel(proposer, proposal)}>
+                                <button class="btn" on:click={cancel}>
                                     Cancel
                                 </button>
                             {/if}
 
-                            <button class="btn" on:click={() => WharfService.exec(proposer, proposal)}>
+                            <button class="btn" on:click={exec}>
                                 Execute
                             </button>
                         {/if}

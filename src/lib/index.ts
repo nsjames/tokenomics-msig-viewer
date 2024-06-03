@@ -169,5 +169,6 @@ export const getActions = async (fetch:any, account:string, proposal: string, ne
         expiration: unpacked.expiration,
         earliestExecution: rawProposal.earliest_exec_time || null,
         approvals,
+        hash: Checksum256.hash(rawProposal.packed_transaction).toString(),
     };
 }

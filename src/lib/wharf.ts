@@ -60,8 +60,18 @@ export default class WharfService {
         account.set(null)
     }
 
-    static async approve(proposer:string, proposal_name:string){
+    static async approve(proposer:string, proposal_name:string, proposal_hash:string|undefined = undefined){
         if (!WharfService.session) return;
+
+        const data:any = {
+            proposer,
+            proposal_name,
+            level: WharfService.session?.permissionLevel,
+        };
+
+        if(proposal_hash) {
+            data.proposal_hash = proposal_hash;
+        }
 
         return WharfService.session?.transact({
             actions: [
@@ -69,11 +79,7 @@ export default class WharfService {
                     account: "eosio.msig",
                     name: "approve",
                     authorization: [WharfService.session?.permissionLevel],
-                    data: {
-                        proposer,
-                        proposal_name,
-                        level: WharfService.session?.permissionLevel,
-                    }
+                    data
                 }
             ]
         } as any).catch(err => {
