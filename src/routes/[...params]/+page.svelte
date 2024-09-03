@@ -190,7 +190,12 @@
                                 <figure class="p-1 px-2 bg-zinc-600 text-white rounded text-xs mt-1">
                                     #{index+1}
                                 </figure>
-                                <figure class="text-xl"><span class="font-bold">{action.account} :: <u>{action.name}</u></span></figure>
+                                <section>
+                                    <figure class="text-xl"><span class="font-bold">{action.account} :: <u>{action.name}</u></span></figure>
+                                    <figure class="text-xs">
+                                        Auths: <b>{action.authorization.map((auth) => `${auth.actor}@${auth.permission}`).join(', ')}</b>
+                                    </figure>
+                                </section>
                             </section>
 
                             <section class="bg-gray-50 border border-zinc-200 rounded-lg p-4 mt-2 text-xs overflow-x-scroll">
