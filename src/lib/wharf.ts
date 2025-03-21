@@ -5,6 +5,7 @@ import { WalletPluginAnchor } from "@wharfkit/wallet-plugin-anchor"
 import { toast } from 'svelte-sonner'
 
 export let account:Writable<string|null> = writable(null);
+export let permission:Writable<string|null> = writable(null);
 
 export default class WharfService {
     public static sessionKit:SessionKit|null = null;
@@ -38,6 +39,7 @@ export default class WharfService {
         if(session) {
             WharfService.session = session
             account.set(session.actor.toString())
+            permission.set(session.permission.toString())
         }
     }
 
@@ -53,11 +55,17 @@ export default class WharfService {
                 ? WharfService.session.actor.toString()
                 : null
         )
+        permission.set(
+            WharfService.session
+                ? WharfService.session.permission.toString()
+                : null
+        )
     }
 
     static async logout(){
         await WharfService.sessionKit?.logout()
         account.set(null)
+        permission.set(null)
     }
 
     static async approve(proposer:string, proposal_name:string, proposal_hash:string|undefined = undefined){

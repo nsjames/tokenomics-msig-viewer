@@ -3,7 +3,7 @@
     import {NETWORKS} from "$lib/networks";
     import {onMount} from "svelte";
     import {Bytes, Checksum256} from "@wharfkit/antelope";
-    import WharfService, {account} from "$lib/wharf";
+    import WharfService, {account, permission} from "$lib/wharf";
 
     export let data;
 
@@ -70,8 +70,8 @@
     })
 
     $: isProposer = $account && proposer === $account;
-    $: isApprover = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account);
-    $: hasApproved = $account && proposalData?.approvals.find((x:any) => x.name.split('@')[0] === $account && x.approved);
+    $: isApprover = $account && proposalData?.approvals.find((x:any) => x.name === `${$account}@${$permission}`);
+    $: hasApproved = $account && proposalData?.approvals.find((x:any) => x.name === `${$account}@${$permission}` && x.approved);
 
     const refresh = async () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
